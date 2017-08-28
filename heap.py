@@ -8,7 +8,7 @@ class Heap:
     def clear(self):
         self.h = []
 
-    def size(self):
+    def count(self):
         return len(self.h)
 
     def push(self, element):

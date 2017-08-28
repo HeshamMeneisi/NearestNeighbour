@@ -32,7 +32,7 @@ class Finder(object):
 
     def add_candidate(self, p):
         self.pq.push(p)
-        if self.pq.size() > self.m:
+        if self.pq.count() > self.m:
             self.pq.pop()
 
 
