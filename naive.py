@@ -1,17 +1,16 @@
-import helper as h
+from measurer import SquareDistMeasurer
+from finder import Finder
 
 
-def find_closest(point, p_list, k=2, dist_f=h.sq_dist):
-    return p_list[find_closest_idx(point, p_list, k=2, dist_f=h.sq_dist)]
+class NaiveFinder(Finder):
+    def __init__(self, p_set, measurer=SquareDistMeasurer(2)):
+        super(NaiveFinder, self).__init__(p_set, measurer)
 
-
-def find_closest_idx(point, p_list, k=2, dist_f=h.sq_dist):
-    assert len(point) == k and len(p_list) > 0 and len(p_list[0]) == k
-    min_idx = 0
-    min_d = dist_f(point, p_list[0], k)
-    for i in range(1, len(p_list)):
-        d = dist_f(point, p_list[i], k)
-        if d < min_d:
-            min_idx = i
-            min_d = d
-    return min_idx
+    def find_closest_m(self, point, m):
+        self.begin(m)
+        for i in range(0, self.count):
+            d = self.measurer.measure(point, self.p_set[i].value)
+            if self.pq.size() < m or d < self.pq.peek().current_dis:
+                self.p_set[i].current_dis = d
+                self.add_candidate(self.p_set[i])
+        return [[self.pq.peek().value, self.pq.peek().index, self.pq.pop().current_dis] for i in range(m)]
