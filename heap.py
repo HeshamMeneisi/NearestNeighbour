@@ -23,3 +23,9 @@ class Heap:
         if len(self.h):
             return self.h[0]
         return None
+
+    def clone(self):
+        from copy import deepcopy
+        target = Heap()
+        target.h = deepcopy(self.h)
+        return target

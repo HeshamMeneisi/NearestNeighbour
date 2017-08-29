@@ -28,11 +28,11 @@ class Finder(object):
     def begin(self, m):
         assert m < self.count
         self.pq.clear()
-        self.m = m
+        self._m = m
 
     def add_candidate(self, p):
         self.pq.push(p)
-        if self.pq.count() > self.m:
+        if self.pq.count() > self._m:
             self.pq.pop()
 
 

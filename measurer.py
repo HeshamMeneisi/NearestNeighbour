@@ -3,7 +3,7 @@ from abc import abstractmethod
 
 
 class DissimilarityMeasurer(object):
-    def __init__(self, k):
+    def __init__(self, k=2):
         self.k = k
 
     @abstractmethod

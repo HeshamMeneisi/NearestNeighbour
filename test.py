@@ -1,22 +1,12 @@
 # This file is used solely for quick tests. It can be, at any time, completely omitted from the project.
 
-from finder import Element
-from kdtree import KDTree
+from kdfinder import KDFinder
 import numpy as np
 
-# Tree consistency test
-# print "Testing raw data."
-# a = np.random.randn(10000, 2)
-# t = KDTree(a)
-#
-# for i in range(0, len(a)):
-#     assert t.has(a[i])
+a = np.random.rand(10000, 2) * 1000 - 500
 
-print "Testing wrapped data."
-a = np.random.randn(10000, 2)
-t = KDTree(partitioner='value')
-for i in range(len(a)):
-    t.insert(Element(a[i], i))
+print a.min(axis=0)
 
-for i in range(len(a)):
-    assert t.has(Element(a[i], i))
+kd = KDFinder(a)
+
+print kd.find_closest([1,1])
