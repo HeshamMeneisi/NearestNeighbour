@@ -44,3 +44,6 @@ class Element(object):
 
     def __cmp__(self, other):
         return self.current_dis < other.current_dis
+
+    def __eq__(self, other):
+        return self.index == other.index and self.value == other.value

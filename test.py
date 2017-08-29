@@ -1,16 +1,22 @@
 # This file is used solely for quick tests. It can be, at any time, completely omitted from the project.
 
 from finder import Element
-from heap import Heap
+from kdtree import KDTree
 import numpy as np
 
-h = Heap()
+# Tree consistency test
+# print "Testing raw data."
+# a = np.random.randn(10000, 2)
+# t = KDTree(a)
+#
+# for i in range(0, len(a)):
+#     assert t.has(a[i])
 
-mx = 0
-for i in range(100000):
-    n = np.random.randint(0, 100000)
-    if n > mx:
-        mx = n
-    h.push(Element(0, i, n))
+print "Testing wrapped data."
+a = np.random.randn(10000, 2)
+t = KDTree(partitioner='value')
+for i in range(len(a)):
+    t.insert(Element(a[i], i))
 
-assert h.peek().current_dis == mx
+for i in range(len(a)):
+    assert t.has(Element(a[i], i))
