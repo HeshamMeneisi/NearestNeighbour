@@ -6,10 +6,13 @@ class StopWatch:
     def start(self):
         self.start_time = time.clock()
 
+    def elapsed(self):
+        return time.clock() - self.start_time
+
     def lap(self):
         import time
         if self.start_time:
-            print "Elapsed time: " + str(time.clock() - self.start_time) + " seconds."
+            print "Elapsed time: " + str(self.elapsed()) + " seconds."
         else:
             print "Stopwatch was never started"
 

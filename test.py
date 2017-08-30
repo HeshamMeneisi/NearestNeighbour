@@ -2,11 +2,19 @@
 
 from kdfinder import KDFinder
 import numpy as np
+import matplotlib.pyplot as plt
 
-a = np.random.rand(10000, 2) * 1000 - 500
+fig = plt.figure()
 
-print a.min(axis=0)
+ax1 = fig.add_subplot(1,1,1)
+ax2 = fig.add_axes(ax1.get_position(), frameon=False)
 
-kd = KDFinder(a)
+ax1.plot(range(50), 'r-')
+ax2.plot(range(10), 'g-')
 
-print kd.find_closest([1,1])
+ax1.set_xlim([0,50])
+ax1.set_ylim([0,50])
+ax2.set_xlim([0,50])
+ax2.set_ylim([0,50])
+
+plt.show()
