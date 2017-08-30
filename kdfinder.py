@@ -43,6 +43,7 @@ class KDFinder(Finder):
         dim = self.tree.d_order[node.discriminator]
         p = node.value[dim]
         dis = self.measurer.measure(point, node.value)
+        bol = False
         if self.pq.count() < m or dis < self.pq.peek().current_dis:
             node.obj.current_dis = dis
             self.add_candidate(node.obj)
@@ -64,16 +65,7 @@ class KDFinder(Finder):
                 if self.search(node.left, point, m):
                     return True
                 self._b_upper[dim] = temp
-        else:
-            if node.right is not None:
-                # Search right subtree
-                temp = self._b_lower[dim]
-                self._b_lower[dim] = p
-                if self.search(node.right, point, m):
-                    return True
-                self._b_lower[dim] = temp
-        # Backtracking
-        if point[dim] < p:
+            # Backtracking
             if node.right is not None:
                 temp = self._b_lower[dim]
                 self._b_lower[dim] = p
@@ -85,6 +77,14 @@ class KDFinder(Finder):
                         return True
                 self._b_lower[dim] = temp
         else:
+            if node.right is not None:
+                # Search right subtree
+                temp = self._b_lower[dim]
+                self._b_lower[dim] = p
+                if self.search(node.right, point, m):
+                    return True
+                self._b_lower[dim] = temp
+            # Backtracking
             if node.left is not None:
                 temp = self._b_upper[dim]
                 self._b_upper[dim] = p
@@ -95,8 +95,9 @@ class KDFinder(Finder):
                     if self.search(node.left, point, m):
                         return True
                 self._b_upper[dim] = temp
+
         # Instant termination condition while backtracking
-        wb = self.within_bounds(self.pq.peek().current_dis, point)
+        wb = not bol and self.within_bounds(self.pq.peek().current_dis, point)
         if self.debug:
             self.do_all(point, "C", "Within Bounds: " + str(wb))
         return self.pq.count() == m and wb

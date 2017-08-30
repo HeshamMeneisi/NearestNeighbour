@@ -4,17 +4,24 @@ from kdfinder import KDFinder
 import numpy as np
 import matplotlib.pyplot as plt
 
-fig = plt.figure()
+a = np.random.rand(500, 2)
+xa = a[:,0]
+ya = a[:,1]
+xlim = np.asarray([xa.min(),xa.max()])
+ylim = np.asarray([ya.min(), ya.max()])
 
-ax1 = fig.add_subplot(1,1,1)
-ax2 = fig.add_axes(ax1.get_position(), frameon=False)
+exp = (xlim[1] - xlim[0]) * 0.1
+xlim += [-exp, exp]
+exp = (ylim[1] - ylim[0]) * 0.1
+ylim += [-exp, exp]
 
-ax1.plot(range(50), 'r-')
-ax2.plot(range(10), 'g-')
+plt.xlim(xlim)
+plt.ylim(ylim)
 
-ax1.set_xlim([0,50])
-ax1.set_ylim([0,50])
-ax2.set_xlim([0,50])
-ax2.set_ylim([0,50])
+plt.plot(xa, ya, 'go', alpha=0.7, zorder=0, markersize=2)
+
+kdf = KDFinder(a)
+kdf.setup_plot(xlim, ylim, True)
+kdf.find_closest_m(np.random.rand(2) ,5)
 
 plt.show()
