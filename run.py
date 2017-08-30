@@ -47,10 +47,12 @@ yb = b[:, 1]
 
 xlim = np.asarray([np.min([xa.min(), xb.min()]), np.max([xa.max(), xb.max()])])
 ylim = np.asarray([np.min([ya.min(), yb.min()]), np.max([ya.max(), yb.max()])])
+
 exp = (xlim[1] - xlim[0]) * x_exp
 xlim += [-exp, exp]
 exp = (ylim[1] - ylim[0]) * y_exp
 ylim += [-exp, exp]
+
 plt.xlim(xlim)
 plt.ylim(ylim)
 
@@ -65,6 +67,7 @@ sw.start()
 nf = NaiveFinder(a)
 total_nv += sw.elapsed()
 sw.reset()
+
 print "Initializing K-D Tree module..."
 kdf = KDFinder(a)
 total_kd += sw.elapsed()
@@ -73,9 +76,11 @@ sw.lap()
 for i in range(m):
     print i
     p1 = b[i, :]
+
     sw.start()
     found = nf.find_closest_m(p1, K)
     total_nv += sw.elapsed()
+
     sw.reset()
     kdfound = kdf.find_closest_m(p1, K)
     total_kd += sw.elapsed()
@@ -101,29 +106,36 @@ found = nf.find_closest_m(p1, 5)
 for element in found:
     p2 = element[0]
     h1 = plt.plot([p1[0], p2[0]], [p1[1], p2[1]], color=ground_truth_col, zorder=2, linewidth=2)
+
 kdf.setup_plot(xlim, ylim, save_steps)
 kdfound = kdf.find_closest_m(p1, 5)
 for element in kdfound:
     p2 = element[0]
     h2 = plt.plot([p1[0], p2[0]], [p1[1], p2[1]], color=test_col, zorder=3, linewidth=1.5)
+
 if zoom_in:
     points = np.asarray(kdfound)[:, 0]
     xs = np.asarray([p[0] for p in points])
     ys = np.asarray([p[1] for p in points])
+
     xlim = np.asarray([xs.min(), xs.max()])
     ylim = np.asarray([ys.min() , ys.max()])
+
     exp = (xlim[1] - xlim[0]) * x_exp
     xlim += [-exp, exp]
     exp = (ylim[1] - ylim[0]) * y_exp
     ylim += [-exp, exp]
+    
     for ax in plt.gcf().axes:
         ax.set_xlim(xlim)
         ax.set_ylim(ylim)
+
 if full_screen:
     mng = plt.get_current_fig_manager()
     print mng.full_screen_toggle()
-plt.show()
 
 print ""
 print "Total Time for Naive Approach:", total_nv
 print "Total Time for K-D Tree:", total_kd
+
+plt.show()
