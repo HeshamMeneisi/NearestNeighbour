@@ -39,11 +39,8 @@ class KDFinder(Finder):
             self.counter = 0
             self.visited = []
 
-    def search(self, node, point, m):
-        dim = self.tree.d_order[node.discriminator]
-        p = node.value[dim]
+    def check_node(self, node, point, m):
         dis = self.measurer.measure(point, node.value)
-        bol = False
         if self.pq.count() < m or dis < self.pq.peek().current_dis:
             node.obj.current_dis = dis
             self.add_candidate(node.obj)
@@ -55,8 +52,14 @@ class KDFinder(Finder):
             if node.right is not None:
                 msg += '~HasRight'
             else:
-                msg += '~Discriminator: '+CLABELS[self.tree.d_order[node.discriminator]]
+                msg += '~Discriminator: ' + CLABELS[self.tree.d_order[node.discriminator]]
             self.do_all(point, 'A', msg)
+
+    def search(self, node, point, m):
+        dim = self.tree.d_order[node.discriminator]
+        p = node.value[dim]
+        bol = False
+        self.check_node(node, point, m)
         if point[dim] < p:
             if node.left is not None:
                 # Search left subtree
