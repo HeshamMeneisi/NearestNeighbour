@@ -81,24 +81,34 @@ class KDTree(object):
 
 class BucketedKDTree(KDTree):
     # If bsize is <=0 the tree will handle bucket splitting using a climbing pointer (bsize=log(n))
-    def __init__(self, data=None, partitioner=None, k=2, d_order=[0, 1], bsize=None):
+    def __init__(self, data=None, partitioner=None, k=2, d_order=[0, 1], bsize=None, optimized=False):
         self.bsize = bsize
+        self.optimized = optimized
+        assert not bsize or bsize > 3
         super(BucketedKDTree, self).__init__(None, partitioner, k, d_order)
-        base = Bucket(data, None, None)
-        if bsize:
-            msize = bsize
-        else:
-            import  math
-            msize = math.log(self.count)
-        self.build_tree(base, msize)
+        if data is not None:
+            self.count = len(data)
+            base = Bucket([Node(x, partitioner) for x in data], None, None)
+            if bsize:
+                msize = bsize
+            else:
+                import  math
+                msize = math.log(self.count)
+            self.root = self.build_tree(base, msize)
 
     def build_tree(self, base, bsize):
         if base.count() <= bsize:
             return base
-        p = base.split()
-        p.left.discriminator = p.right.discriminator = (p.discriminator+1)%self.k
+        p = base.split(self.optimized, (self.k, self.d_order))
+        p.left.discriminator = p.right.discriminator = (p.discriminator+1) % self.k
+        l = p.left
+        r = p.right
         p.left = self.build_tree(p.left, bsize)
         p.right = self.build_tree(p.right, bsize)
+        if p.right == p:
+            print "?"
+            test = self.build_tree(r, bsize)
+            test == p
         return p
 
     def insert_node_at(self, node, target):
@@ -127,20 +137,23 @@ class BucketedKDTree(KDTree):
         else:
             self.insert_node_at(node, target.right)
 
-    def subtree_has(self, node, root):
+    def subtree_has(self, node, root, c=0):
         if root is None or node is None:
             return False
         dim = self.d_order[root.discriminator]
         if type(root) is Bucket:
-            for n in root:
+            for n in root.data:
                 b = n.obj == node.obj
                 if (type(b) is bool and b) or (hasattr(b, "all") and b.all()):
                     return True
         else:
+            b = root.obj == node.obj
+            if (type(b) is bool and b) or (hasattr(b, "all") and b.all()):
+                return True
             if node.value[dim] < root.value[dim]:
-                return self.subtree_has(node, root.left)
+                return self.subtree_has(node, root.left, c+1)
             else:
-                return self.subtree_has(node, root.right)
+                return self.subtree_has(node, root.right, c+1)
 
 
 class Node(object):
@@ -175,7 +188,19 @@ class Bucket(object):
     def insert(self, node):
         self.data.append(node)
 
-    def split(self):
+    def split(self, check_spread=False, (k, d_order)=None):
+        if check_spread:
+            assert k is not None and d_order is not None
+            d0 =  d_order[0]
+            mspread = sum([n.value[d0]*n.value[d0] for n in self.data]) / len(self.data)
+            spreadest = d0
+            for i in range(1, k):
+                d = d_order[i]
+                spread = sum([n.value[d]*n.value[d] for n in self.data]) / len(self.data)
+                if spread > mspread:
+                    mspread = spread
+                    spreadest = d
+            self.discriminator = spreadest
         self.data.sort(key=lambda x: x.value[self.discriminator])
         m = len(self.data) / 2
         self.data[m].discriminator = self.discriminator

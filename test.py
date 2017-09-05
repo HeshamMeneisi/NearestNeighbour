@@ -10,10 +10,25 @@ from kdtree import BucketedKDTree, KDTree
 a = np.random.rand(5000, 2)
 
 sw = StopWatch()
-BucketedKDTree(a, bsize=50)
-sw.reset()
-KDTree(a)
-sw.lap()
+obt = BucketedKDTree(a, optimized=True)
+sw.reset('Build time for Optimized BKD')
+bt = BucketedKDTree(a)
+sw.reset('Build time for BKD')
+t = KDTree(a)
+sw.reset('Build time for regular KD')
+for value in a:
+    if not obt.has(value):
+        print 'Missing Value!!'
+sw.reset('Traversal time for Optimized BKD')
+for value in a:
+    if not bt.has(value):
+        print 'Missing Value!!'
+sw.reset('Traversal time for BKD')
+for value in a:
+    if not t.has(value):
+        print 'Missing Value!!'
+sw.reset('Traversal time for regular KD')
+
 # a = np.asarray([[8,3],[9,2],[10,1],[7,4],[6,5],[5,6],[4,7],[3,8],[2,9],[1,10]])
 # b = np.copy(a)
 # c = np.copy(a)
@@ -28,7 +43,7 @@ sw.lap()
 # b.sort(key=lambda x:x[0])
 # sw.reset()
 # b[len(b)/2]
-# print "MoM"
+# print 'MoM'
 # sw.start()
 # med =  h.med_of_meds(np.copy(c[:,0]), 0, len(c), len(c)/2)
 # k=0

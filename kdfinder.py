@@ -1,6 +1,6 @@
 from measurer import SquareDistMeasurer
 from finder import Finder, Element
-from kdtree import KDTree
+from kdtree import KDTree, Node, BucketedKDTree, Bucket
 
 # Debugging setup #################################
 import matplotlib.pyplot as plt
@@ -19,7 +19,7 @@ class KDFinder(Finder):
         assert p_set is not None
         self.count = len(p_set)
         assert self.count > 0
-        self.tree = KDTree(None, 'value')
+        self.tree = KDTree(None, 'value', measurer.k)
         for i in range(len(p_set)):
             self.tree.insert(Element(p_set[i], i))
         self.debug = False
@@ -56,48 +56,49 @@ class KDFinder(Finder):
             self.do_all(point, 'A', msg)
 
     def search(self, node, point, m):
-        dim = self.tree.d_order[node.discriminator]
-        p = node.value[dim]
         bol = False
         self.check_node(node, point, m)
-        if point[dim] < p:
-            if node.left is not None:
-                # Search left subtree
-                temp = self._b_upper[dim]
-                self._b_upper[dim] = p
-                if self.search(node.left, point, m):
-                    return True
-                self._b_upper[dim] = temp
-            # Backtracking
-            if node.right is not None:
-                temp = self._b_lower[dim]
-                self._b_lower[dim] = p
-                bol = self.bounds_overlap(self.pq.peek().current_dis, point)
-                if self.debug:
-                    self.do_all(point, "B", "Bounds Overlap: " + str(bol))
-                if self.pq.count() < m or bol:
-                    if self.search(node.right, point, m):
-                        return True
-                self._b_lower[dim] = temp
-        else:
-            if node.right is not None:
-                # Search right subtree
-                temp = self._b_lower[dim]
-                self._b_lower[dim] = p
-                if self.search(node.right, point, m):
-                    return True
-                self._b_lower[dim] = temp
-            # Backtracking
-            if node.left is not None:
-                temp = self._b_upper[dim]
-                self._b_upper[dim] = p
-                bol = self.bounds_overlap(self.pq.peek().current_dis, point)
-                if self.debug:
-                    self.do_all(point, "B", "Bounds Overlap: " + str(bol))
-                if self.pq.count() < m or bol:
+        if type(node) is Node:
+            dim = self.tree.d_order[node.discriminator]
+            p = node.value[dim]
+            if point[dim] < p:
+                if node.left is not None:
+                    # Search left subtree
+                    temp = self._b_upper[dim]
+                    self._b_upper[dim] = p
                     if self.search(node.left, point, m):
                         return True
-                self._b_upper[dim] = temp
+                    self._b_upper[dim] = temp
+                # Backtracking
+                if node.right is not None:
+                    temp = self._b_lower[dim]
+                    self._b_lower[dim] = p
+                    bol = self.bounds_overlap(self.pq.peek().current_dis, point)
+                    if self.debug:
+                        self.do_all(point, "B", "Bounds Overlap: " + str(bol))
+                    if self.pq.count() < m or bol:
+                        if self.search(node.right, point, m):
+                            return True
+                    self._b_lower[dim] = temp
+            else:
+                if node.right is not None:
+                    # Search right subtree
+                    temp = self._b_lower[dim]
+                    self._b_lower[dim] = p
+                    if self.search(node.right, point, m):
+                        return True
+                    self._b_lower[dim] = temp
+                # Backtracking
+                if node.left is not None:
+                    temp = self._b_upper[dim]
+                    self._b_upper[dim] = p
+                    bol = self.bounds_overlap(self.pq.peek().current_dis, point)
+                    if self.debug:
+                        self.do_all(point, "B", "Bounds Overlap: " + str(bol))
+                    if self.pq.count() < m or bol:
+                        if self.search(node.left, point, m):
+                            return True
+                    self._b_upper[dim] = temp
 
         # Instant termination condition while backtracking
         wb = not bol and self.within_bounds(self.pq.peek().current_dis, point)
@@ -188,3 +189,21 @@ class KDFinder(Finder):
     def save_plot(self, label):
         path = os.path.join(WORKDIR, str(self.counter)+'_'+label+'.png')
         plt.savefig(path)
+
+
+class BKDFinder(KDFinder):
+    def __init__(self, p_set, measurer=SquareDistMeasurer(2), optimize=False):
+        super(KDFinder, self).__init__(None, measurer)
+        assert p_set is not None
+        self.count = len(p_set)
+        assert self.count > 0
+        self.tree = BucketedKDTree([Element(p_set[i], i) for i in range(len(p_set))], 'value', \
+                                   measurer.k, optimized=optimize)
+        self.debug = False
+
+    def check_node(self, node, point, m):
+        if type(node) is Bucket:
+            for n in node.data:
+                super(BKDFinder, self).check_node(n, point, m)
+        else:
+            super(BKDFinder, self).check_node(node, point, m)

@@ -9,9 +9,14 @@ class StopWatch:
     def elapsed(self):
         return time.clock() - self.start_time
 
-    def lap(self):
-        print "Elapsed time: " + str(self.elapsed()) + " seconds."
+    def lap(self, msg=None):
+        t = str(self.elapsed())
+        if msg is None:
+            msg = 'Elapsed time: '
+        else:
+            msg += ': '
+        print msg + t + " seconds."
 
-    def reset(self):
-        self.lap()
+    def reset(self, msg=None):
+        self.lap(msg)
         self.start()
