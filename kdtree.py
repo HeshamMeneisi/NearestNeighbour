@@ -1,10 +1,12 @@
 class KDTree(object):
-    def __init__(self, data=None, partitioner=None, k=2, d_order=[0, 1]):
+    def __init__(self, data=None, partitioner=None, k=2, d_order=None):
         """
         :param partitioner: The property to use as a partitioner. Set to None to use the direct value
         :param data: The k-dimensional vector is expected to be in the obj.[partitioner?] field
         :param force_enc: Encapsulates the supplied data points in a container with a value field
         """
+        if d_order is None:
+            d_order = range(k)
         self.partitioner = partitioner
         self.k = k
         self.d_order = d_order
@@ -81,7 +83,7 @@ class KDTree(object):
 
 class BucketedKDTree(KDTree):
     # If bsize is <=0 the tree will handle bucket splitting using a climbing pointer (bsize=log(n))
-    def __init__(self, data=None, partitioner=None, k=2, d_order=[0, 1], bsize=None, optimized=False):
+    def __init__(self, data=None, partitioner=None, k=2, d_order=None, bsize=None, optimized=False):
         self.bsize = bsize
         self.optimized = optimized
         assert not bsize or bsize > 3
